@@ -1,0 +1,59 @@
+name: CI-Latest
+
+on:
+  push:
+    branches: [ autobuild ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup mermaid-cli
+        # You may pin to the exact commit or the version.
+        # uses: AnimMouse/setup-mermaid-cli@f05a30e1a0274b94a7bae8a392f351ae5369e5c0
+        uses: AnimMouse/setup-mermaid-cli@v1
+        with:
+          # mermaid-cli version
+          version: # optional, default is latest
+          # GitHub token to avoid API rate limiting
+          token: # optional, default is ${{ github.token }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+          
+      - name: Setup latex and image generation dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            latexmk \
+            texlive \
+            texlive-latex-recommended \
+            texlive-latex-extra \
+            tex-gyre \
+            librsvg2-bin \
+            libxkbcommon0 
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+
+      - name: Execute Makefile
+        run: make all -j$(nproc) MMDC_FLAGS="--puppeteerConfigFile puppeteer-config.json" 
+
+      - name: Upload generated files
+        uses: actions/upload-artifact@v4
+        with:
+          name: generated-files
+          path: |
+            build/html/*
+            build/latex/geisaspecification.pdf
+
+
