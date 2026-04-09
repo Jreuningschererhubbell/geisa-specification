@@ -56,7 +56,7 @@ jobs:
           echo "release_id=${RELEASE_ID}" >> "${GITHUB_OUTPUT}"
           echo "artifact_dir=${ARTIFACT_DIR}" >> "${GITHUB_OUTPUT}"
 
-          echo "Release: ${{ steps.release_info.outputs.release_id }}" > "${ARTIFACT_DIR}/buildinfo.txt"
+          echo "Release: ${RELEASE_ID}" > "${ARTIFACT_DIR}/buildinfo.txt"
           echo "Build Time: $(date -u +"%Y-%m-%dT%H:%M:%SZ")" >> "${ARTIFACT_DIR}/buildinfo.txt"
           echo "Git SHA: $(git rev-parse HEAD)" >> "${ARTIFACT_DIR}/buildinfo.txt"
 
