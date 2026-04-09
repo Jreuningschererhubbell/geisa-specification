@@ -14,14 +14,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Setup mermaid-cli
-        # You may pin to the exact commit or the version.
-        # uses: AnimMouse/setup-mermaid-cli@f05a30e1a0274b94a7bae8a392f351ae5369e5c0
         uses: AnimMouse/setup-mermaid-cli@v1
-        with:
-          # mermaid-cli version
-          version: # optional, default is latest
-          # GitHub token to avoid API rate limiting
-          token: # optional, default is ${{ github.token }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -48,12 +41,29 @@ jobs:
       - name: Execute Makefile
         run: make all -j$(nproc) MMDC_FLAGS="--puppeteerConfigFile puppeteer-config.json" 
 
-      - name: Upload generated files
+      - name: Create release artifact directory and copy build outputs
+        id: release_info
+        run: |
+          RELEASE="$(tr -d '[:space:]' < source/geisa_release.txt)"
+          SHORT_SHA="$(git rev-parse --short HEAD)"
+          RELEASE_ID="${RELEASE}-${SHORT_SHA}"
+          ARTIFACT_DIR="build/release/${RELEASE_ID}"
+
+          mkdir -p "${ARTIFACT_DIR}"
+          cp -R build/html "${ARTIFACT_DIR}/html"
+          cp build/latex/geisaspecification.pdf "${ARTIFACT_DIR}/"
+
+          echo "release_id=${RELEASE_ID}" >> "${GITHUB_OUTPUT}"
+          echo "artifact_dir=${ARTIFACT_DIR}" >> "${GITHUB_OUTPUT}"
+
+          echo "Release: ${{ steps.release_info.outputs.release_id }}" > "${ARTIFACT_DIR}/buildinfo.txt"
+          echo "Build Time: $(date -u +"%Y-%m-%dT%H:%M:%SZ")" >> "${ARTIFACT_DIR}/buildinfo.txt"
+          echo "Git SHA: $(git rev-parse HEAD)" >> "${ARTIFACT_DIR}/buildinfo.txt"
+
+      - name: Upload release artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: generated-files
-          path: |
-            build/html/*
-            build/latex/geisaspecification.pdf
+          name: geisa-specification-release-${{ steps.release_info.outputs.release_id }}
+          path: ${{ steps.release_info.outputs.artifact_dir }}
 
 
