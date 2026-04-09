@@ -11,13 +11,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Setup mermaid-cli
         uses: AnimMouse/setup-mermaid-cli@v1
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.x'
           
@@ -61,7 +61,7 @@ jobs:
           echo "Git SHA: $(git rev-parse HEAD)" >> "${ARTIFACT_DIR}/buildinfo.txt"
 
       - name: Upload release artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: geisa-specification-release-${{ steps.release_info.outputs.release_id }}
           path: ${{ steps.release_info.outputs.artifact_dir }}
